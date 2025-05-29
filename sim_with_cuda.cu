@@ -404,25 +404,21 @@ void generate_visualization_script() {
     fprintf(f, "            ax2.scatter([bh['x']], [bh['y']], \n");
     fprintf(f, "                       s=70, color='yellow', edgecolor=galaxy_colors[gid], linewidth=1)\n");
     fprintf(f, "    \n");
-    fprintf(f, "    # Draw lines between all black hole pairs when they're close\n");
     fprintf(f, "    if len(black_holes) > 1 and interaction_strength > 0.3:\n");
     fprintf(f, "        bh_xs = black_holes['x'].values\n");
     fprintf(f, "        bh_ys = black_holes['y'].values\n");
     fprintf(f, "        bh_zs = black_holes['z'].values\n");
     fprintf(f, "        \n");
-    fprintf(f, "        # Draw all possible connections in 3D\n");
     fprintf(f, "        for i in range(len(black_holes)):\n");
     fprintf(f, "            for j in range(i+1, len(black_holes)):\n");
     fprintf(f, "                ax1.plot([bh_xs[i], bh_xs[j]], [bh_ys[i], bh_ys[j]], [bh_zs[i], bh_zs[j]], \n");
     fprintf(f, "                         'y--', alpha=0.4 * interaction_strength)\n");
     fprintf(f, "                \n");
-    fprintf(f, "                # For 2D plot, only draw if at least one BH is in view\n");
     fprintf(f, "                if (abs(bh_xs[i]) <= FIXED_VIEW_LIMIT and abs(bh_ys[i]) <= FIXED_VIEW_LIMIT) or \\\n");
     fprintf(f, "                   (abs(bh_xs[j]) <= FIXED_VIEW_LIMIT and abs(bh_ys[j]) <= FIXED_VIEW_LIMIT):\n");
     fprintf(f, "                    ax2.plot([bh_xs[i], bh_xs[j]], [bh_ys[i], bh_ys[j]], 'y--', \n");
     fprintf(f, "                             alpha=0.4 * interaction_strength)\n");
     fprintf(f, "    \n");
-    fprintf(f, "    # Plot distance graph in corner of 2D view\n");
     fprintf(f, "    if len(distances) > 1:\n");
     fprintf(f, "        inset_ax = ax2.inset_axes([0.65, 0.65, 0.3, 0.3])\n");
     fprintf(f, "        inset_ax.plot(steps, distances, 'k-')\n");
@@ -430,7 +426,6 @@ void generate_visualization_script() {
     fprintf(f, "        inset_ax.set_title('Min Galaxy Distance')\n");
     fprintf(f, "        inset_ax.grid(True, alpha=0.3)\n");
     fprintf(f, "    \n");
-    fprintf(f, "    # Add labels and title\n");
     fprintf(f, "    ax1.set_xlabel('X')\n");
     fprintf(f, "    ax1.set_ylabel('Y')\n");
     fprintf(f, "    ax1.set_zlabel('Z')\n");
@@ -450,7 +445,6 @@ void generate_visualization_script() {
     fprintf(f, "                f'Visible particles: {visible_count} (invisible: {outside_count})')\n");
     fprintf(f, "    return fig\n\n");
     
-    fprintf(f, "# Create and save animation\n");
     fprintf(f, "print(\"Creating animation...\")\n");
     fprintf(f, "anim = FuncAnimation(fig, update, frames=range(%d), interval=100)\n", STEPS/SAVE_INTERVAL + 1);
     fprintf(f, "print(\"Saving animation...\")\n");

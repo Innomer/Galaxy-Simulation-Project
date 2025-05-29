@@ -216,18 +216,15 @@ void generate_visualization_script() {
     fprintf(f, "import colorsys\n");
     fprintf(f, "import os\n\n");
     
-    fprintf(f, "# Function to read data\n");
     fprintf(f, "def read_frame(frame):\n");
     fprintf(f, "    try:\n");
     fprintf(f, "        filename = 'positions_{:04d}.csv'.format(frame * %d)\n", SAVE_INTERVAL);
     fprintf(f, "        if not os.path.exists(filename):\n");
     fprintf(f, "            return None, None\n");
     fprintf(f, "            \n");
-    fprintf(f, "        # First line contains metadata\n");
     fprintf(f, "        with open(filename, 'r') as f:\n");
     fprintf(f, "            metadata_line = f.readline().strip('#').strip()\n");
     fprintf(f, "        \n");
-    fprintf(f, "        # Parse metadata\n");
     fprintf(f, "        meta_dict = {}\n");
     fprintf(f, "        for item in metadata_line.split():\n");
     fprintf(f, "            if '=' in item:\n");
@@ -237,22 +234,16 @@ void generate_visualization_script() {
     fprintf(f, "                except ValueError:\n");
     fprintf(f, "                    meta_dict[key] = value\n");
     fprintf(f, "        \n");
-    fprintf(f, "        # Read the actual data\n");
     fprintf(f, "        data = pd.read_csv(filename, comment='#')\n");
     fprintf(f, "        return data, meta_dict\n");
     fprintf(f, "    except Exception as e:\n");
     fprintf(f, "        print(f\"Error reading frame {frame}: {str(e)}\")\n");
     fprintf(f, "        return None, None\n\n");
     
-    fprintf(f, "# Set up figure with 3D and 2D views\n");
     fprintf(f, "fig = plt.figure(figsize=(18, 10))\n");
     fprintf(f, "ax1 = fig.add_subplot(121, projection='3d')\n");
     fprintf(f, "ax2 = fig.add_subplot(122)\n\n");
-    
-    fprintf(f, "# Fixed view limits for the top-down view\n");
     fprintf(f, "FIXED_VIEW_LIMIT = 3000  # Adjust based on your galaxy scale\n\n");
-    
-    fprintf(f, "# Generate distinct colors for each galaxy\n");
     fprintf(f, "def get_distinct_colors(n):\n");
     fprintf(f, "    colors = []\n");
     fprintf(f, "    for i in range(n):\n");
@@ -265,12 +256,8 @@ void generate_visualization_script() {
     
     fprintf(f, "galaxy_colors = get_distinct_colors(%d)\n", NUM_GALAXIES);
     fprintf(f, "black_hole_colors = [(c[0]*0.8, c[1]*0.8, c[2]*0.8) for c in galaxy_colors]\n\n");
-    
-    fprintf(f, "# Track galaxy distances over time\n");
     fprintf(f, "distances = []\n");
     fprintf(f, "steps = []\n\n");
-    
-    fprintf(f, "# Create a colormap for interaction intensity\n");
     fprintf(f, "interaction_cmap = plt.cm.cool\n\n");
     
     fprintf(f, "def update(frame):\n");
@@ -281,7 +268,6 @@ void generate_visualization_script() {
     fprintf(f, "    if data is None:\n");
     fprintf(f, "        return\n");
     fprintf(f, "    \n");
-    fprintf(f, "    # Get galaxy distance from metadata\n");
     fprintf(f, "    if metadata and 'distance' in metadata:\n");
     fprintf(f, "        current_distance = metadata['distance']\n");
     fprintf(f, "        distances.append(current_distance)\n");
@@ -289,11 +275,9 @@ void generate_visualization_script() {
     fprintf(f, "    else:\n");
     fprintf(f, "        current_distance = 0\n");
     fprintf(f, "    \n");
-    fprintf(f, "    # Filter data\n");
     fprintf(f, "    black_holes = data[data['type'] == 1]\n");
     fprintf(f, "    stars = data[data['type'] == 0]\n");
     fprintf(f, "    \n");
-    fprintf(f, "    # Filter out particles beyond fixed view limits for 2D plot\n");
     fprintf(f, "    stars_2d = stars[\n");
     fprintf(f, "        (stars['x'] >= -FIXED_VIEW_LIMIT) & \n");
     fprintf(f, "        (stars['x'] <= FIXED_VIEW_LIMIT) & \n");
@@ -301,25 +285,20 @@ void generate_visualization_script() {
     fprintf(f, "        (stars['y'] <= FIXED_VIEW_LIMIT)\n");
     fprintf(f, "    ]\n");
     fprintf(f, "    \n");
-    fprintf(f, "    # Calculate interaction strength for color variation\n");
     fprintf(f, "    interaction_strength = max(0, min(1, 2000 / (current_distance + 1)))\n");
     fprintf(f, "    size_factor = 1.0 + interaction_strength * 0.5\n");
     fprintf(f, "    \n");
-    fprintf(f, "    # Set axis limits\n");
     fprintf(f, "    max_range = max(abs(data['x'].max()), abs(data['y'].max()), \n");
     fprintf(f, "                   abs(data['x'].min()), abs(data['y'].min())) * 1.1\n");
     fprintf(f, "    z_range = max(abs(data['z'].max()), abs(data['z'].min())) * 1.5\n");
     fprintf(f, "    \n");
-    fprintf(f, "    # 3D Plot - dynamic view\n");
     fprintf(f, "    ax1.set_xlim(-max_range, max_range)\n");
     fprintf(f, "    ax1.set_ylim(-max_range, max_range)\n");
     fprintf(f, "    ax1.set_zlim(-z_range, z_range)\n");
     fprintf(f, "    \n");
-    fprintf(f, "    # 2D Plot - fixed view\n");
     fprintf(f, "    ax2.set_xlim(-FIXED_VIEW_LIMIT, FIXED_VIEW_LIMIT)\n");
     fprintf(f, "    ax2.set_ylim(-FIXED_VIEW_LIMIT, FIXED_VIEW_LIMIT)\n");
     fprintf(f, "    \n");
-    fprintf(f, "    # Plot stars for each galaxy in 3D view (all stars)\n");
     fprintf(f, "    for gid in range(%d):\n", NUM_GALAXIES);
     fprintf(f, "        g_stars = stars[stars['galaxy'] == gid]\n");
     fprintf(f, "        \n");
@@ -337,10 +316,8 @@ void generate_visualization_script() {
     fprintf(f, "            else:\n");
     fprintf(f, "                v_norm = np.array([])\n");
     fprintf(f, "            \n");
-    fprintf(f, "            # Get base color for this galaxy\n");
     fprintf(f, "            base_color = colors.to_rgba(galaxy_colors[gid])\n");
     fprintf(f, "            \n");
-    fprintf(f, "            # Blend with velocity-based color when galaxies are interacting\n");
     fprintf(f, "            if len(v_norm) > 0:\n");
     fprintf(f, "                custom_colors = []\n");
     fprintf(f, "                for v in v_norm:\n");
@@ -355,14 +332,12 @@ void generate_visualization_script() {
     fprintf(f, "                ax1.scatter(g_stars['x'], g_stars['y'], g_stars['z'], \n");
     fprintf(f, "                           s=sizes, color=galaxy_colors[gid], alpha=0.6)\n");
     fprintf(f, "    \n");
-    fprintf(f, "    # Plot stars for each galaxy in 2D view (only stars within view limits)\n");
     fprintf(f, "    for gid in range(%d):\n", NUM_GALAXIES);
     fprintf(f, "        g_stars_2d = stars_2d[stars_2d['galaxy'] == gid]\n");
     fprintf(f, "        \n");
     fprintf(f, "        if len(g_stars_2d) > 0:\n");
     fprintf(f, "            sizes = np.minimum(g_stars_2d['mass'] * size_factor, 3.0 * size_factor)\n");
     fprintf(f, "            \n");
-    fprintf(f, "            # Calculate velocity magnitude\n");
     fprintf(f, "            velocities = np.sqrt(g_stars_2d['vx']**2 + g_stars_2d['vy']**2 + g_stars_2d['vz']**2)\n");
     fprintf(f, "            if len(velocities) > 0:\n");
     fprintf(f, "                v_min, v_max = velocities.min(), velocities.max()\n");
@@ -373,10 +348,8 @@ void generate_visualization_script() {
     fprintf(f, "            else:\n");
     fprintf(f, "                v_norm = np.array([])\n");
     fprintf(f, "            \n");
-    fprintf(f, "            # Get base color for this galaxy\n");
     fprintf(f, "            base_color = colors.to_rgba(galaxy_colors[gid])\n");
     fprintf(f, "            \n");
-    fprintf(f, "            # Blend with velocity-based color when galaxies are interacting\n");
     fprintf(f, "            if len(v_norm) > 0:\n");
     fprintf(f, "                custom_colors = []\n");
     fprintf(f, "                for v in v_norm:\n");
@@ -391,38 +364,31 @@ void generate_visualization_script() {
     fprintf(f, "                ax2.scatter(g_stars_2d['x'], g_stars_2d['y'], \n");
     fprintf(f, "                           s=sizes, color=galaxy_colors[gid], alpha=0.6)\n");
     fprintf(f, "    \n");
-    fprintf(f, "    # Plot black holes in both views\n");
     fprintf(f, "    for i, bh in black_holes.iterrows():\n");
     fprintf(f, "        gid = int(bh['galaxy'])\n");
     fprintf(f, "        \n");
-    fprintf(f, "        # Plot black hole in 3D view - always show\n");
     fprintf(f, "        ax1.scatter([bh['x']], [bh['y']], [bh['z']], \n");
     fprintf(f, "                   s=40, color='yellow', edgecolor=galaxy_colors[gid], linewidth=1)\n");
     fprintf(f, "                   \n");
-    fprintf(f, "        # Plot black hole in 2D view only if within limits\n");
     fprintf(f, "        if abs(bh['x']) <= FIXED_VIEW_LIMIT and abs(bh['y']) <= FIXED_VIEW_LIMIT:\n");
     fprintf(f, "            ax2.scatter([bh['x']], [bh['y']], \n");
     fprintf(f, "                       s=70, color='yellow', edgecolor=galaxy_colors[gid], linewidth=1)\n");
     fprintf(f, "    \n");
-    fprintf(f, "    # Draw lines between all black hole pairs when they're close\n");
     fprintf(f, "    if len(black_holes) > 1 and interaction_strength > 0.3:\n");
     fprintf(f, "        bh_xs = black_holes['x'].values\n");
     fprintf(f, "        bh_ys = black_holes['y'].values\n");
     fprintf(f, "        bh_zs = black_holes['z'].values\n");
     fprintf(f, "        \n");
-    fprintf(f, "        # Draw all possible connections in 3D\n");
     fprintf(f, "        for i in range(len(black_holes)):\n");
     fprintf(f, "            for j in range(i+1, len(black_holes)):\n");
     fprintf(f, "                ax1.plot([bh_xs[i], bh_xs[j]], [bh_ys[i], bh_ys[j]], [bh_zs[i], bh_zs[j]], \n");
     fprintf(f, "                         'y--', alpha=0.4 * interaction_strength)\n");
     fprintf(f, "                \n");
-    fprintf(f, "                # For 2D plot, only draw if at least one BH is in view\n");
     fprintf(f, "                if (abs(bh_xs[i]) <= FIXED_VIEW_LIMIT and abs(bh_ys[i]) <= FIXED_VIEW_LIMIT) or \\\n");
     fprintf(f, "                   (abs(bh_xs[j]) <= FIXED_VIEW_LIMIT and abs(bh_ys[j]) <= FIXED_VIEW_LIMIT):\n");
     fprintf(f, "                    ax2.plot([bh_xs[i], bh_xs[j]], [bh_ys[i], bh_ys[j]], 'y--', \n");
     fprintf(f, "                             alpha=0.4 * interaction_strength)\n");
     fprintf(f, "    \n");
-    fprintf(f, "    # Plot distance graph in corner of 2D view\n");
     fprintf(f, "    if len(distances) > 1:\n");
     fprintf(f, "        inset_ax = ax2.inset_axes([0.65, 0.65, 0.3, 0.3])\n");
     fprintf(f, "        inset_ax.plot(steps, distances, 'k-')\n");
@@ -430,7 +396,6 @@ void generate_visualization_script() {
     fprintf(f, "        inset_ax.set_title('Min Galaxy Distance')\n");
     fprintf(f, "        inset_ax.grid(True, alpha=0.3)\n");
     fprintf(f, "    \n");
-    fprintf(f, "    # Add labels and title\n");
     fprintf(f, "    ax1.set_xlabel('X')\n");
     fprintf(f, "    ax1.set_ylabel('Y')\n");
     fprintf(f, "    ax1.set_zlabel('Z')\n");
@@ -450,7 +415,6 @@ void generate_visualization_script() {
     fprintf(f, "                f'Visible particles: {visible_count} (invisible: {outside_count})')\n");
     fprintf(f, "    return fig\n\n");
     
-    fprintf(f, "# Create and save animation\n");
     fprintf(f, "print(\"Creating animation...\")\n");
     fprintf(f, "anim = FuncAnimation(fig, update, frames=range(%d), interval=100)\n", STEPS/SAVE_INTERVAL + 1);
     fprintf(f, "print(\"Saving animation...\")\n");
